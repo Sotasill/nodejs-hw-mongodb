@@ -1,25 +1,90 @@
 import express from 'express';
+import pino from 'pino-http';
 import cors from 'cors';
-import pino from 'express-pino-logger';
-import { getContacts } from './controllers/contactController.js';
+import { getEnvVars } from './utils/getEnvVars.js';
+import { getAllContacts, getContactById } from './services/contacts.js';
 
-export function setupServer() {
-    const app = express();
-    
-    app.use(cors());
-    
-    const logger = pino();
-    app.use(logger);
+const PORT = Number(getEnvVars('PORT', '3000'));
 
-    app.use((req, res) => {
-        res.status(404).json({ message: 'Not found' });
+export const setupServer = () => {
+  const app = express();
+
+  app.use(express.json());
+  app.use(cors());
+
+  app.use(
+    pino({
+      transport: {
+        target: 'pino-pretty',
+      },
+    }),
+  );
+
+  app.get('/', (req, res) => {
+    res.json({
+      message: 'Good',
     });
+  });
 
-    const PORT = process.env.PORT || 3000;
+  app.get('/contacts', async (req, res) => {
+    try {
+      const contacts = await getAllContacts();
+      res.status(200).json({
+        status: 'success',
+        message: 'Successfully found contacts!',
+        data: contacts,
+      });
+    } catch (err) {
+      res.status(500).json({
+        status: 500,
+        message: 'Failed to fetch contacts',
+        error: err.message,
+      });
+    }
+  });
 
-    app.get('/contacts', getContacts);
+  app.get('/contacts/:contactId', async (req, res) => {
+    try {
+      const { contactId } = req.params;
+      const contact = await getContactById(contactId);
 
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
+      if (!contact) {
+        return res.status(404).json({
+          status: 404,
+          message: `Contact with id ${contactId} not found`,
+        });
+      }
+
+      res.status(200).json({
+        status: 'success',
+        message: `Successfully found contact with id ${contactId}!`,
+        data: contact,
+      });
+    } catch (err) {
+      res.status(500).json({
+        status: 500,
+        message: 'Failed to fetch contact',
+        error: err.message,
+      });
+    }
+  });
+
+  app.use('*', (req, res) => {
+    res.status(404).json({
+      status: 'error',
+      message: 'Not found',
     });
-}
+  });
+
+  app.use((err, req, res) => {
+    res.status(500).json({
+      status: 'error',
+      message: 'Something went wrong',
+      error: err.message,
+    });
+  });
+
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+};
