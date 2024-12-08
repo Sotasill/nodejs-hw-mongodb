@@ -26,10 +26,7 @@ const contactsSchema = new Schema(
     },
   },
   {
-    timestamps: {
-      createdAt: true,
-      updatedAt: true,
-    },
+    timestamps: true
   },
 );
 
