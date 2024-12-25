@@ -1,5 +1,4 @@
 import {
-  getAllContacts,
   getContactById,
   updateContact,
   deleteContact,
@@ -59,7 +58,7 @@ export const getContactByIdCtrl = ctrlWrapper(async (req, res) => {
   }
 
   res.status(200).json({
-    status: 'success',
+    status: 200,
     message: 'Successfully found contact!',
     data: contact,
   });
