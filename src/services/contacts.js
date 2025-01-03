@@ -1,27 +1,64 @@
 import { ContactsCollection } from '../db/models/contacts.js';
+import createHttpError from 'http-errors';
 
-export const getAllContacts = async () => {
-  const contacts = await ContactsCollection.find().select('-__v');
+const listContacts = async (userId) => {
+  const contacts = await ContactsCollection.find({ userId });
   return contacts;
 };
 
-export const getContactById = async (contactId) => {
-  const contact = await ContactsCollection.findById(contactId).select('-__v');
+const getContactById = async (contactId, userId) => {
+  const contact = await ContactsCollection.findOne({ _id: contactId, userId });
+  if (!contact) {
+    throw createHttpError(404, 'Contact not found');
+  }
   return contact;
 };
 
-export const createContact = async (contactData) => {
-  const newContact = new ContactsCollection(contactData);
-  const savedContact = await newContact.save();
-  return savedContact.toObject({ versionKey: false });
+const addContact = async (data) => {
+  const newContact = await ContactsCollection.create(data);
+  return newContact;
 };
 
-export const deleteContact = async (contactId) => {
-  const deletedContact = await ContactsCollection.findByIdAndDelete(contactId).select('-__v');
-  return deletedContact;
+const removeContact = async (contactId, userId) => {
+  const contact = await ContactsCollection.findOneAndDelete({
+    _id: contactId,
+    userId,
+  });
+  if (!contact) {
+    throw createHttpError(404, 'Contact not found');
+  }
+  return contact;
 };
 
-export const updateContact = async (contactId, updateData) => {
-  const updatedContact = await ContactsCollection.findByIdAndUpdate(contactId, updateData, { new: true }).select('-__v');
-  return updatedContact;
+const updateContactById = async (contactId, data, userId) => {
+  const contact = await ContactsCollection.findOneAndUpdate(
+    { _id: contactId, userId },
+    data,
+    { new: true },
+  );
+  if (!contact) {
+    throw createHttpError(404, 'Contact not found');
+  }
+  return contact;
+};
+
+const updateStatusContactById = async (contactId, data, userId) => {
+  const contact = await ContactsCollection.findOneAndUpdate(
+    { _id: contactId, userId },
+    { favorite: data.favorite },
+    { new: true },
+  );
+  if (!contact) {
+    throw createHttpError(404, 'Contact not found');
+  }
+  return contact;
+};
+
+export {
+  listContacts,
+  getContactById,
+  removeContact,
+  addContact,
+  updateContactById,
+  updateStatusContactById,
 };
