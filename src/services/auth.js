@@ -3,6 +3,10 @@ import bcrypt from 'bcrypt';
 import { UsersCollection } from '../db/models/users.js';
 import jwt from 'jsonwebtoken';
 
+
+console.log('JWT_ACCESS_SECRET:', process.env.JWT_ACCESS_SECRET);
+console.log('JWT_REFRESH_SECRET:', process.env.JWT_REFRESH_SECRET);
+
 const registerUser = async ({ name, email, password }) => {
   const existingUser = await UsersCollection.findOne({ email });
   if (existingUser) {
@@ -35,7 +39,6 @@ const loginUser = async ({ email, password }) => {
     throw createHttpError(401, 'Email or password is wrong');
   }
 
-
   await UsersCollection.findByIdAndUpdate(user._id, { token: null });
 
   const accessToken = jwt.sign(
@@ -67,7 +70,6 @@ const refreshSession = async (refreshToken) => {
 
     await UsersCollection.findByIdAndUpdate(user._id, { token: null });
 
-   
     const accessToken = jwt.sign(
       { id: user._id },
       process.env.JWT_ACCESS_SECRET,
@@ -80,7 +82,6 @@ const refreshSession = async (refreshToken) => {
       { expiresIn: '30d' },
     );
 
-    
     await UsersCollection.findByIdAndUpdate(user._id, {
       token: newRefreshToken,
     });
