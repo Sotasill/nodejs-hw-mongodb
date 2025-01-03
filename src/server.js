@@ -5,6 +5,7 @@ import { getEnvVars } from './utils/getEnvVars.js';
 import contactsRouter from './routers/contacts.js';
 import notFoundHandler from './middlewares/notFoundHandler.js';
 import errorHandler from './middlewares/errorHandler.js';
+const authRouter = require('./routers/auth');
 
 const PORT = Number(getEnvVars('PORT', '3000'));
 
@@ -15,6 +16,8 @@ export const setupServer = () => {
   app.use(cors());
 
   app.use('/contacts', contactsRouter);
+
+  app.use('/auth', authRouter);
 
   app.use(
     pino({
