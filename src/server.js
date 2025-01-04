@@ -34,7 +34,7 @@ export const setupServer = () => {
 
   app.get('/', (req, res) => {
     res.json({
-      message: 'Good',
+      message: 'server is running on port 3000',
     });
   });
 
