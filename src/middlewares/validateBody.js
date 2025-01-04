@@ -3,15 +3,13 @@ import createHttpError from 'http-errors';
 const validateBody = (schema) => {
   return async (req, res, next) => {
     try {
-      const { error } = schema.validate(req.body);
-      if (error) {
-        throw createHttpError(400, error.message);
-      }
+      const validatedBody = await schema.validateAsync(req.body);
+      req.body = validatedBody;
       next();
     } catch (error) {
-      next(error);
+      next(createHttpError(400, error.message));
     }
   };
 };
 
-export default validateBody;
+export { validateBody };
