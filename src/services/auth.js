@@ -2,10 +2,10 @@ import createHttpError from 'http-errors';
 import bcrypt from 'bcrypt';
 import { UsersCollection } from '../db/models/users.js';
 import jwt from 'jsonwebtoken';
+import { getEnvVars } from '../utils/getEnvVars.js';
 
-
-console.log('JWT_ACCESS_SECRET:', process.env.JWT_ACCESS_SECRET);
-console.log('JWT_REFRESH_SECRET:', process.env.JWT_REFRESH_SECRET);
+const JWT_ACCESS_SECRET = getEnvVars('JWT_ACCESS_SECRET');
+const JWT_REFRESH_SECRET = getEnvVars('JWT_REFRESH_SECRET');
 
 const registerUser = async ({ name, email, password }) => {
   const existingUser = await UsersCollection.findOne({ email });
@@ -41,17 +41,13 @@ const loginUser = async ({ email, password }) => {
 
   await UsersCollection.findByIdAndUpdate(user._id, { token: null });
 
-  const accessToken = jwt.sign(
-    { id: user._id },
-    process.env.JWT_ACCESS_SECRET,
-    { expiresIn: '15m' },
-  );
+  const accessToken = jwt.sign({ id: user._id }, JWT_ACCESS_SECRET, {
+    expiresIn: '15m',
+  });
 
-  const refreshToken = jwt.sign(
-    { id: user._id },
-    process.env.JWT_REFRESH_SECRET,
-    { expiresIn: '30d' },
-  );
+  const refreshToken = jwt.sign({ id: user._id }, JWT_REFRESH_SECRET, {
+    expiresIn: '30d',
+  });
 
   await UsersCollection.findByIdAndUpdate(user._id, { token: refreshToken });
 
@@ -60,7 +56,7 @@ const loginUser = async ({ email, password }) => {
 
 const refreshSession = async (refreshToken) => {
   try {
-    const { id } = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const { id } = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
     const user = await UsersCollection.findById(id);
 
@@ -70,17 +66,13 @@ const refreshSession = async (refreshToken) => {
 
     await UsersCollection.findByIdAndUpdate(user._id, { token: null });
 
-    const accessToken = jwt.sign(
-      { id: user._id },
-      process.env.JWT_ACCESS_SECRET,
-      { expiresIn: '15m' },
-    );
+    const accessToken = jwt.sign({ id: user._id }, JWT_ACCESS_SECRET, {
+      expiresIn: '15m',
+    });
 
-    const newRefreshToken = jwt.sign(
-      { id: user._id },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: '30d' },
-    );
+    const newRefreshToken = jwt.sign({ id: user._id }, JWT_REFRESH_SECRET, {
+      expiresIn: '30d',
+    });
 
     await UsersCollection.findByIdAndUpdate(user._id, {
       token: newRefreshToken,
@@ -100,7 +92,7 @@ const refreshSession = async (refreshToken) => {
 
 const logoutUser = async (refreshToken) => {
   try {
-    const { id } = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const { id } = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
     const user = await UsersCollection.findById(id);
 

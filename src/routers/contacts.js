@@ -16,7 +16,7 @@ import authenticate from '../middlewares/authenticate.js';
 
 const router = express.Router();
 
-// Применяем middleware authenticate ко всем роутам
+
 router.use(authenticate);
 
 router.get('/', getAllContacts);
