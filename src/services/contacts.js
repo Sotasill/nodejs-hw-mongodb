@@ -1,9 +1,31 @@
 import { ContactsCollection } from '../db/models/contacts.js';
 import createHttpError from 'http-errors';
 
-const listContacts = async (userId) => {
-  const contacts = await ContactsCollection.find({ userId });
-  return contacts;
+const listContacts = async (userId, query = {}) => {
+  const {
+    page = 1,
+    perPage = 20,
+    sortBy = 'createdAt',
+    sortOrder = 'desc',
+  } = query;
+
+  const skip = (page - 1) * perPage;
+  const sortOptions = { [sortBy]: sortOrder === 'desc' ? -1 : 1 };
+
+  const [contacts, total] = await Promise.all([
+    ContactsCollection.find({ userId })
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(perPage),
+    ContactsCollection.countDocuments({ userId }),
+  ]);
+
+  return {
+    contacts,
+    page: Number(page),
+    perPage: Number(perPage),
+    total,
+  };
 };
 
 const getContactById = async (contactId, userId) => {

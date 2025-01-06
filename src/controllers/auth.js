@@ -9,7 +9,12 @@ const register = async (req, res, next) => {
     res.status(201).json({
       status: 201,
       message: 'Successfully registered a user!',
-      data: userData,
+      data: {
+        user: {
+          name: userData.name,
+          email: userData.email,
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -75,13 +80,17 @@ const logout = async (req, res, next) => {
     const { refreshToken } = req.cookies;
 
     if (!refreshToken) {
-      throw createHttpError(401, 'No refresh token provided');
+      throw createHttpError(401, 'Not authorized');
     }
 
     await logoutUser(refreshToken);
-
     res.clearCookie('refreshToken');
-    res.status(204).send();
+
+    res.status(200).json({
+      status: 200,
+      message: 'Successfully logged out!',
+      data: null,
+    });
   } catch (error) {
     next(error);
   }

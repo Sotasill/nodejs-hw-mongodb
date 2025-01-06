@@ -10,7 +10,13 @@ import {
 const getAllContacts = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const contacts = await listContacts(userId);
+    const { page, perPage, sortBy, sortOrder } = req.query;
+    const contacts = await listContacts(userId, {
+      page,
+      perPage,
+      sortBy,
+      sortOrder,
+    });
     res.json(contacts);
   } catch (error) {
     next(error);

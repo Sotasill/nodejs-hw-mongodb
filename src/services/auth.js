@@ -39,7 +39,7 @@ const loginUser = async ({ email, password }) => {
     throw createHttpError(401, 'Email or password is wrong');
   }
 
-  await UsersCollection.findByIdAndUpdate(user._id, { token: null });
+  await UsersCollection.findOneAndUpdate({ _id: user._id }, { token: null });
 
   const accessToken = jwt.sign({ id: user._id }, JWT_ACCESS_SECRET, {
     expiresIn: '15m',
@@ -49,7 +49,10 @@ const loginUser = async ({ email, password }) => {
     expiresIn: '30d',
   });
 
-  await UsersCollection.findByIdAndUpdate(user._id, { token: refreshToken });
+  await UsersCollection.findOneAndUpdate(
+    { _id: user._id },
+    { token: refreshToken },
+  );
 
   return { accessToken, refreshToken };
 };
@@ -58,13 +61,13 @@ const refreshSession = async (refreshToken) => {
   try {
     const { id } = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
-    const user = await UsersCollection.findById(id);
+    const user = await UsersCollection.findOne({ _id: id });
 
     if (!user || user.token !== refreshToken) {
       throw createHttpError(401, 'Invalid refresh token');
     }
 
-    await UsersCollection.findByIdAndUpdate(user._id, { token: null });
+    await UsersCollection.findOneAndUpdate({ _id: user._id }, { token: null });
 
     const accessToken = jwt.sign({ id: user._id }, JWT_ACCESS_SECRET, {
       expiresIn: '15m',
@@ -74,9 +77,10 @@ const refreshSession = async (refreshToken) => {
       expiresIn: '30d',
     });
 
-    await UsersCollection.findByIdAndUpdate(user._id, {
-      token: newRefreshToken,
-    });
+    await UsersCollection.findOneAndUpdate(
+      { _id: user._id },
+      { token: newRefreshToken },
+    );
 
     return { accessToken, newRefreshToken };
   } catch (error) {
@@ -93,20 +97,19 @@ const refreshSession = async (refreshToken) => {
 const logoutUser = async (refreshToken) => {
   try {
     const { id } = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
-
-    const user = await UsersCollection.findById(id);
+    const user = await UsersCollection.findOne({ _id: id });
 
     if (!user || user.token !== refreshToken) {
-      throw createHttpError(401, 'Invalid refresh token');
+      throw createHttpError(401, 'Not authorized');
     }
 
-    await UsersCollection.findByIdAndUpdate(user._id, { token: null });
+    await UsersCollection.findOneAndUpdate({ _id: user._id }, { token: null });
   } catch (error) {
     if (
       error.name === 'JsonWebTokenError' ||
       error.name === 'TokenExpiredError'
     ) {
-      throw createHttpError(401, 'Invalid refresh token');
+      throw createHttpError(401, 'Not authorized');
     }
     throw error;
   }
