@@ -14,6 +14,9 @@ const authenticate = async (req, res, next) => {
       throw createHttpError(401, 'Not authorized');
     }
 
+    console.log('Authentication middleware called');
+    console.log('Authorization header:', authorization);
+
     try {
       const { id } = jwt.verify(token, JWT_ACCESS_SECRET);
       const user = await UsersCollection.findById(id);

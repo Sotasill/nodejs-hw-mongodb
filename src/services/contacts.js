@@ -1,9 +1,30 @@
 import { ContactsCollection } from '../db/models/contacts.js';
 import createHttpError from 'http-errors';
 
-const listContacts = async (userId) => {
-  const contacts = await ContactsCollection.find({ userId });
-  return contacts;
+const listContacts = async (
+  userId,
+  { page = 1, perPage = 20, sortBy, sortOrder = 'asc', isFavourite } = {},
+) => {
+  const query = { userId };
+  if (isFavourite !== undefined) {
+    query.isFavourite = isFavourite;
+  }
+
+  const skip = (page - 1) * perPage;
+  const sortOptions = {};
+  if (sortBy) {
+    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+  }
+
+  const [contacts, total] = await Promise.all([
+    ContactsCollection.find(query).sort(sortOptions).skip(skip).limit(perPage),
+    ContactsCollection.countDocuments(query),
+  ]);
+
+  return {
+    contacts,
+    total,
+  };
 };
 
 const getContactById = async (contactId, userId) => {
@@ -45,7 +66,7 @@ const updateContactById = async (contactId, data, userId) => {
 const updateStatusContactById = async (contactId, data, userId) => {
   const contact = await ContactsCollection.findOneAndUpdate(
     { _id: contactId, userId },
-    { favorite: data.favorite },
+    { isFavourite: data.isFavourite },
     { new: true },
   );
   if (!contact) {

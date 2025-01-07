@@ -90,13 +90,23 @@ const refreshSession = async (refreshToken) => {
   }
 };
 
-const logoutUser = async (refreshToken) => {
+const logoutUser = async (accessToken, refreshToken) => {
   try {
-    const { id } = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+    const decodedAccess = jwt.verify(accessToken, JWT_ACCESS_SECRET);
+    const decodedRefresh = refreshToken
+      ? jwt.verify(refreshToken, JWT_REFRESH_SECRET)
+      : null;
 
-    const user = await UsersCollection.findById(id);
+    if (!decodedAccess) {
+      throw createHttpError(401, 'Invalid access token');
+    }
 
-    if (!user || user.token !== refreshToken) {
+    const user = await UsersCollection.findById(decodedAccess.id);
+    if (!user) {
+      throw createHttpError(401, 'User not found');
+    }
+
+    if (refreshToken && (!decodedRefresh || user.token !== refreshToken)) {
       throw createHttpError(401, 'Invalid refresh token');
     }
 
@@ -106,7 +116,7 @@ const logoutUser = async (refreshToken) => {
       error.name === 'JsonWebTokenError' ||
       error.name === 'TokenExpiredError'
     ) {
-      throw createHttpError(401, 'Invalid refresh token');
+      throw createHttpError(401, 'Invalid token');
     }
     throw error;
   }

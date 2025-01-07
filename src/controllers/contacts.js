@@ -6,12 +6,40 @@ import {
   updateContactById,
   updateStatusContactById,
 } from '../services/contacts.js';
+import { calculatePagination } from '../utils/pagination.js';
 
 const getAllContacts = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const contacts = await listContacts(userId);
-    res.json(contacts);
+    const { page, perPage, sortBy, sortOrder, isFavourite } = req.query;
+
+    const { contacts, total } = await listContacts(userId, {
+      page,
+      perPage,
+      sortBy,
+      sortOrder,
+      isFavourite:
+        isFavourite === 'true'
+          ? true
+          : isFavourite === 'false'
+          ? false
+          : undefined,
+    });
+
+    const pagination = calculatePagination({
+      page,
+      perPage,
+      totalItems: total,
+    });
+
+    res.json({
+      status: 'success',
+      code: 200,
+      data: {
+        result: contacts,
+      },
+      ...pagination,
+    });
   } catch (error) {
     next(error);
   }
@@ -21,8 +49,12 @@ const getContactById = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const { id } = req.params;
-    const contact = await getContactByIdService(id, userId);
-    res.json(contact);
+    const result = await getContactByIdService(id, userId);
+    res.json({
+      status: 'success',
+      code: 200,
+      data: { result },
+    });
   } catch (error) {
     next(error);
   }
@@ -31,8 +63,12 @@ const getContactById = async (req, res, next) => {
 const createContact = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const newContact = await addContact({ ...req.body, userId });
-    res.status(201).json(newContact);
+    const result = await addContact({ ...req.body, userId });
+    res.status(201).json({
+      status: 'success',
+      code: 201,
+      data: { result },
+    });
   } catch (error) {
     next(error);
   }
@@ -42,8 +78,12 @@ const deleteContact = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const { id } = req.params;
-    const contact = await removeContact(id, userId);
-    res.json(contact);
+    const result = await removeContact(id, userId);
+    res.json({
+      status: 'success',
+      code: 200,
+      data: { result },
+    });
   } catch (error) {
     next(error);
   }
@@ -53,8 +93,12 @@ const updateContact = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const { id } = req.params;
-    const contact = await updateContactById(id, req.body, userId);
-    res.json(contact);
+    const result = await updateContactById(id, req.body, userId);
+    res.json({
+      status: 'success',
+      code: 200,
+      data: { result },
+    });
   } catch (error) {
     next(error);
   }
@@ -64,8 +108,12 @@ const updateStatusContact = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const { id } = req.params;
-    const contact = await updateStatusContactById(id, req.body, userId);
-    res.json(contact);
+    const result = await updateStatusContactById(id, req.body, userId);
+    res.json({
+      status: 'success',
+      code: 200,
+      data: { result },
+    });
   } catch (error) {
     next(error);
   }

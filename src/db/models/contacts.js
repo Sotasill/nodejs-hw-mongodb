@@ -10,13 +10,18 @@ const contactSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    phone: {
+    phoneNumber: {
       type: String,
       required: true,
     },
-    favorite: {
+    isFavourite: {
       type: Boolean,
       default: false,
+    },
+    contactType: {
+      type: String,
+      enum: ['work', 'home', 'personal'],
+      default: 'personal',
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
