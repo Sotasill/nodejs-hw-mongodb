@@ -10,10 +10,8 @@ const register = async (req, res, next) => {
       status: 201,
       message: 'Successfully registered a user!',
       data: {
-        user: {
-          name: userData.name,
-          email: userData.email,
-        },
+        name: userData.name,
+        email: userData.email,
       },
     });
   } catch (error) {
@@ -81,11 +79,7 @@ const logout = async (req, res, next) => {
     await logoutUser(userId);
 
     res.clearCookie('refreshToken');
-    res.status(200).json({
-      status: 'success',
-      code: 200,
-      message: 'Logout successful',
-    });
+    res.status(204).end();
   } catch (error) {
     next(error);
   }

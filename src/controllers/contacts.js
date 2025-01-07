@@ -41,12 +41,12 @@ const getAllContacts = async (req, res, next) => {
     });
 
     res.json({
-      status: 'success',
-      code: 200,
+      status: 200,
+      message: 'Successfully found contacts!',
       data: {
-        result: contacts,
+        data: contacts,
+        ...pagination,
       },
-      ...pagination,
     });
   } catch (error) {
     next(error);
@@ -75,7 +75,7 @@ const createContact = async (req, res, next) => {
     res.status(201).json({
       status: 'success',
       code: 201,
-      data: { result },
+      data: result,
     });
   } catch (error) {
     next(error);
