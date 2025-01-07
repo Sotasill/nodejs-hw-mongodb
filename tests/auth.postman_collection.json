@@ -1,0 +1,60 @@
+{
+  "info": {
+    "name": "Auth Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Проверяем статус ответа",
+              "pm.test('Статус ответа должен быть 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "// Проверяем структуру ответа",
+              "pm.test('Ответ должен содержать правильную структуру данных', function () {",
+              "    const responseData = pm.response.json();",
+              "    ",
+              "    pm.expect(responseData).to.be.an('object');",
+              "    pm.expect(responseData.user).to.be.an('object');",
+              "    pm.expect(responseData.user.email).to.be.a('string');",
+              "    pm.expect(responseData.user.subscription).to.be.a('string');",
+              "});",
+              "",
+              "// Проверяем, что пароль не возвращается в ответе",
+              "pm.test('Ответ не должен содержать пароль', function () {",
+              "    const responseData = pm.response.json();",
+              "    ",
+              "    pm.expect(responseData.user.password).to.be.undefined;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "register"]
+        }
+      }
+    }
+  ]
+}

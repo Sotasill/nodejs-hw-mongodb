@@ -4,4 +4,4 @@ const notFoundHandler = (req, res, next) => {
   next(createError(404, 'Route not found'));
 };
 
-export default notFoundHandler; 
+export default notFoundHandler;

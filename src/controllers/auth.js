@@ -1,3 +1,4 @@
+
 import { registerUser } from '../services/auth.js';
 import { loginUser, refreshSession, logoutUser } from '../services/auth.js';
 import createHttpError from 'http-errors';
@@ -92,3 +93,4 @@ const logout = async (req, res, next) => {
 };
 
 export { register, login, refresh, logout };
+

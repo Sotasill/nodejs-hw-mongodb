@@ -1,0 +1,20 @@
+{
+  "info": {
+    "name": "Create Contact - Validation Test",
+    "method": "POST",
+    "url": "{{baseUrl}}/api/contacts",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  },
+  "body": {
+    "mode": "raw",
+    "raw": {
+      "name": "a",
+      "phoneNumber": "1",
+      "email": "invalid-email",
+      "isFavourite": "not-boolean",
+      "contactType": "invalid-type"
+    }
+  }
+}

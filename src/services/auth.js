@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import createHttpError from 'http-errors';
 import bcrypt from 'bcrypt';
 import { UsersCollection } from '../db/models/users.js';
@@ -123,3 +124,17 @@ const logoutUser = async (accessToken, refreshToken) => {
 };
 
 export { registerUser, loginUser, refreshSession, logoutUser };
+=======
+import { UserCollection } from '../db/models/User.js';
+import errorHandler from '../middlewares/errorHandler.js';
+
+export const registerService = async (payload) => {
+  const { username, email, password } = payload;
+  const user = await UserCollection.findOne({ email });
+  if (user) {
+    throw new errorHandler(400, 'User already exists');
+  }
+  const newUser = await UserCollection.create({ username, email, password });
+  return newUser;
+};
+>>>>>>> Stashed changes

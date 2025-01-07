@@ -7,11 +7,19 @@ import {
   updateStatusContactById,
 } from '../services/contacts.js';
 import { calculatePagination } from '../utils/pagination.js';
+import { getSortOptions } from '../utils/sorting.js';
+import { getFilterOptions } from '../utils/filtering.js';
 
 const getAllContacts = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const { page, perPage, sortBy, sortOrder, isFavourite } = req.query;
+    const {
+      page = 1,
+      perPage = 10,
+      sortBy = 'name',
+      sortOrder = 'asc',
+      isFavourite,
+    } = req.query;
 
     const { contacts, total } = await listContacts(userId, {
       page,
