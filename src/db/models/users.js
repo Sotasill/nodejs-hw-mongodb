@@ -21,6 +21,10 @@ const usersSchema = new Schema(
       type: String,
       default: null,
     },
+    sessionId: {
+      type: String,
+      default: null,
+    },
     createdAt: {
       type: Date,
       default: Date.now,

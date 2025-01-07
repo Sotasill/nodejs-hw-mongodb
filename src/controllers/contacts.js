@@ -7,8 +7,6 @@ import {
   updateStatusContactById,
 } from '../services/contacts.js';
 import { calculatePagination } from '../utils/pagination.js';
-import { getSortOptions } from '../utils/sorting.js';
-import { getFilterOptions } from '../utils/filtering.js';
 
 const getAllContacts = async (req, res, next) => {
   try {
@@ -74,7 +72,6 @@ const createContact = async (req, res, next) => {
     const result = await addContact({ ...req.body, userId });
     res.status(201).json({
       status: 'success',
-      code: 201,
       data: result,
     });
   } catch (error) {
@@ -89,7 +86,6 @@ const deleteContact = async (req, res, next) => {
     const result = await removeContact(id, userId);
     res.json({
       status: 'success',
-      code: 200,
       data: { result },
     });
   } catch (error) {
@@ -104,7 +100,6 @@ const updateContact = async (req, res, next) => {
     const result = await updateContactById(id, req.body, userId);
     res.json({
       status: 'success',
-      code: 200,
       data: { result },
     });
   } catch (error) {
@@ -119,7 +114,6 @@ const updateStatusContact = async (req, res, next) => {
     const result = await updateStatusContactById(id, req.body, userId);
     res.json({
       status: 'success',
-      code: 200,
       data: { result },
     });
   } catch (error) {

@@ -49,9 +49,20 @@ const loginUser = async ({ email, password }) => {
     expiresIn: '30d',
   });
 
-  await UsersCollection.findByIdAndUpdate(user._id, { token: refreshToken });
+  const sessionId = jwt.sign(
+    { id: user._id, type: 'session' },
+    JWT_REFRESH_SECRET,
+    {
+      expiresIn: '30d',
+    },
+  );
 
-  return { accessToken, refreshToken };
+  await UsersCollection.findByIdAndUpdate(user._id, {
+    token: refreshToken,
+    sessionId: sessionId,
+  });
+
+  return { accessToken, refreshToken, sessionId };
 };
 
 const refreshSession = async (refreshToken) => {
@@ -74,11 +85,20 @@ const refreshSession = async (refreshToken) => {
       expiresIn: '30d',
     });
 
+    const sessionId = jwt.sign(
+      { id: user._id, type: 'session' },
+      JWT_REFRESH_SECRET,
+      {
+        expiresIn: '30d',
+      },
+    );
+
     await UsersCollection.findByIdAndUpdate(user._id, {
       token: newRefreshToken,
+      sessionId: sessionId,
     });
 
-    return { accessToken, newRefreshToken };
+    return { accessToken, newRefreshToken, sessionId };
   } catch (error) {
     if (
       error.name === 'JsonWebTokenError' ||
@@ -90,14 +110,21 @@ const refreshSession = async (refreshToken) => {
   }
 };
 
-const logoutUser = async (userId) => {
+const logoutUser = async (userId, sessionId) => {
   try {
-    const user = await UsersCollection.findById(userId);
+    const user = await UsersCollection.findOne({
+      _id: userId,
+      sessionId: sessionId,
+    });
+
     if (!user) {
-      throw createHttpError(401, 'User not found');
+      throw createHttpError(401, 'Not authorized');
     }
 
-    await UsersCollection.findByIdAndUpdate(userId, { token: null });
+    await UsersCollection.findByIdAndUpdate(userId, {
+      token: null,
+      sessionId: null,
+    });
   } catch (error) {
     throw error;
   }

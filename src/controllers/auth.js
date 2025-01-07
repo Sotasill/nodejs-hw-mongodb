@@ -27,11 +27,21 @@ const login = async (req, res, next) => {
       throw createHttpError(400, 'Missing required fields');
     }
 
-    const { accessToken, refreshToken } = await loginUser({ email, password });
+    const { accessToken, refreshToken, sessionId } = await loginUser({
+      email,
+      password,
+    });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+
+    res.cookie('sid', sessionId, {
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: '/',
     });
 
     res.status(200).json({
@@ -54,11 +64,20 @@ const refresh = async (req, res, next) => {
       throw createHttpError(401, 'No refresh token provided');
     }
 
-    const { accessToken, newRefreshToken } = await refreshSession(refreshToken);
+    const { accessToken, newRefreshToken, sessionId } = await refreshSession(
+      refreshToken,
+    );
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+
+    res.cookie('sid', sessionId, {
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: '/',
     });
 
     res.status(200).json({
@@ -75,10 +94,16 @@ const refresh = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
-    const userId = req.user._id;
-    await logoutUser(userId);
+    const { sid } = req.cookies;
+    if (!sid) {
+      throw createHttpError(401, 'Not authorized');
+    }
 
-    res.clearCookie('refreshToken');
+    const userId = req.user._id;
+    await logoutUser(userId, sid);
+
+    res.clearCookie('refreshToken', { path: '/' });
+    res.clearCookie('sid', { path: '/' });
     res.status(204).end();
   } catch (error) {
     next(error);
