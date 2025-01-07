@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import createHttpError from 'http-errors';
 import bcrypt from 'bcrypt';
 import { UsersCollection } from '../db/models/users.js';
@@ -91,50 +90,17 @@ const refreshSession = async (refreshToken) => {
   }
 };
 
-const logoutUser = async (accessToken, refreshToken) => {
+const logoutUser = async (userId) => {
   try {
-    const decodedAccess = jwt.verify(accessToken, JWT_ACCESS_SECRET);
-    const decodedRefresh = refreshToken
-      ? jwt.verify(refreshToken, JWT_REFRESH_SECRET)
-      : null;
-
-    if (!decodedAccess) {
-      throw createHttpError(401, 'Invalid access token');
-    }
-
-    const user = await UsersCollection.findById(decodedAccess.id);
+    const user = await UsersCollection.findById(userId);
     if (!user) {
       throw createHttpError(401, 'User not found');
     }
 
-    if (refreshToken && (!decodedRefresh || user.token !== refreshToken)) {
-      throw createHttpError(401, 'Invalid refresh token');
-    }
-
-    await UsersCollection.findByIdAndUpdate(user._id, { token: null });
+    await UsersCollection.findByIdAndUpdate(userId, { token: null });
   } catch (error) {
-    if (
-      error.name === 'JsonWebTokenError' ||
-      error.name === 'TokenExpiredError'
-    ) {
-      throw createHttpError(401, 'Invalid token');
-    }
     throw error;
   }
 };
 
 export { registerUser, loginUser, refreshSession, logoutUser };
-=======
-import { UserCollection } from '../db/models/User.js';
-import errorHandler from '../middlewares/errorHandler.js';
-
-export const registerService = async (payload) => {
-  const { username, email, password } = payload;
-  const user = await UserCollection.findOne({ email });
-  if (user) {
-    throw new errorHandler(400, 'User already exists');
-  }
-  const newUser = await UserCollection.create({ username, email, password });
-  return newUser;
-};
->>>>>>> Stashed changes

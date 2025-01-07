@@ -1,4 +1,3 @@
-
 import { registerUser } from '../services/auth.js';
 import { loginUser, refreshSession, logoutUser } from '../services/auth.js';
 import createHttpError from 'http-errors';
@@ -79,7 +78,7 @@ const refresh = async (req, res, next) => {
 const logout = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    await UsersCollection.findByIdAndUpdate(userId, { token: null });
+    await logoutUser(userId);
 
     res.clearCookie('refreshToken');
     res.status(200).json({
@@ -93,4 +92,3 @@ const logout = async (req, res, next) => {
 };
 
 export { register, login, refresh, logout };
-

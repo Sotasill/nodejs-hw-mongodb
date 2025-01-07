@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose';
-import { emailRegexp } from '../../constants/users.js';
+import { emailRegex } from '../../constants/users.js';
 const usersSchema = new Schema(
   {
     name: {
@@ -11,7 +11,7 @@ const usersSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-      match: emailRegexp,
+      match: emailRegex,
     },
     password: {
       type: String,
