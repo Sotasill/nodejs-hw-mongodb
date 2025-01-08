@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import createHttpError from 'http-errors';
-import { UsersCollection } from '../db/models/users.js';
+import { User } from '../db/models/user.js';
 import { getEnvVars } from '../utils/getEnvVars.js';
 
 const JWT_ACCESS_SECRET = getEnvVars('JWT_ACCESS_SECRET');
@@ -14,12 +14,9 @@ const authenticate = async (req, res, next) => {
       throw createHttpError(401, 'Not authorized');
     }
 
-    console.log('Authentication middleware called');
-    console.log('Authorization header:', authorization);
-
     try {
       const { id } = jwt.verify(token, JWT_ACCESS_SECRET);
-      const user = await UsersCollection.findById(id);
+      const user = await User.findById(id);
 
       if (!user || !user.token) {
         throw createHttpError(401, 'Not authorized');
@@ -38,4 +35,16 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-export default authenticate;
+const authenticateLogout = async (req, res, next) => {
+  try {
+    const { sid } = req.cookies;
+    if (!sid) {
+      throw createHttpError(401, 'Not authorized');
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { authenticate as default, authenticateLogout };

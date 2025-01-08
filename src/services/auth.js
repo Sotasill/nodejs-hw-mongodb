@@ -1,6 +1,6 @@
 import createHttpError from 'http-errors';
 import bcrypt from 'bcrypt';
-import { UsersCollection } from '../db/models/users.js';
+import { User } from '../db/models/user.js';
 import jwt from 'jsonwebtoken';
 import { getEnvVars } from '../utils/getEnvVars.js';
 
@@ -8,13 +8,13 @@ const JWT_ACCESS_SECRET = getEnvVars('JWT_ACCESS_SECRET');
 const JWT_REFRESH_SECRET = getEnvVars('JWT_REFRESH_SECRET');
 
 const registerUser = async ({ name, email, password }) => {
-  const existingUser = await UsersCollection.findOne({ email });
+  const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw createHttpError(409, 'Email in use');
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = await UsersCollection.create({
+  const newUser = await User.create({
     name,
     email,
     password: hashedPassword,
@@ -27,7 +27,7 @@ const registerUser = async ({ name, email, password }) => {
 };
 
 const loginUser = async ({ email, password }) => {
-  const user = await UsersCollection.findOne({ email });
+  const user = await User.findOne({ email });
 
   if (!user) {
     throw createHttpError(401, 'Email or password is wrong');
@@ -39,7 +39,7 @@ const loginUser = async ({ email, password }) => {
     throw createHttpError(401, 'Email or password is wrong');
   }
 
-  await UsersCollection.findByIdAndUpdate(user._id, { token: null });
+  await User.findByIdAndUpdate(user._id, { token: null });
 
   const accessToken = jwt.sign({ id: user._id }, JWT_ACCESS_SECRET, {
     expiresIn: '15m',
@@ -57,7 +57,7 @@ const loginUser = async ({ email, password }) => {
     },
   );
 
-  await UsersCollection.findByIdAndUpdate(user._id, {
+  await User.findByIdAndUpdate(user._id, {
     token: refreshToken,
     sessionId: sessionId,
   });
@@ -69,13 +69,13 @@ const refreshSession = async (refreshToken) => {
   try {
     const { id } = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
-    const user = await UsersCollection.findById(id);
+    const user = await User.findById(id);
 
     if (!user || user.token !== refreshToken) {
       throw createHttpError(401, 'Invalid refresh token');
     }
 
-    await UsersCollection.findByIdAndUpdate(user._id, { token: null });
+    await User.findByIdAndUpdate(user._id, { token: null });
 
     const accessToken = jwt.sign({ id: user._id }, JWT_ACCESS_SECRET, {
       expiresIn: '15m',
@@ -93,7 +93,7 @@ const refreshSession = async (refreshToken) => {
       },
     );
 
-    await UsersCollection.findByIdAndUpdate(user._id, {
+    await User.findByIdAndUpdate(user._id, {
       token: newRefreshToken,
       sessionId: sessionId,
     });
@@ -110,10 +110,9 @@ const refreshSession = async (refreshToken) => {
   }
 };
 
-const logoutUser = async (userId, sessionId) => {
+const logoutUser = async (sessionId) => {
   try {
-    const user = await UsersCollection.findOne({
-      _id: userId,
+    const user = await User.findOne({
       sessionId: sessionId,
     });
 
@@ -121,7 +120,7 @@ const logoutUser = async (userId, sessionId) => {
       throw createHttpError(401, 'Not authorized');
     }
 
-    await UsersCollection.findByIdAndUpdate(userId, {
+    await User.findByIdAndUpdate(user._id, {
       token: null,
       sessionId: null,
     });

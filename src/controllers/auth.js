@@ -99,8 +99,7 @@ const logout = async (req, res, next) => {
       throw createHttpError(401, 'Not authorized');
     }
 
-    const userId = req.user._id;
-    await logoutUser(userId, sid);
+    await logoutUser(sid);
 
     res.clearCookie('refreshToken', { path: '/' });
     res.clearCookie('sid', { path: '/' });

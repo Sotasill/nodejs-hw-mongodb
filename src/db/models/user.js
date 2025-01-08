@@ -1,35 +1,36 @@
 import { model, Schema } from 'mongoose';
 import { emailRegex } from '../../constants/users.js';
 
-
 const userSchema = new Schema(
   {
     name: {
       type: String,
       required: true,
     },
-  
     email: {
-        type: String,
-        match: emailRegex,
+      type: String,
+      match: emailRegex,
       unique: true,
-      required: false,
+      required: true,
     },
-    
     password: {
       type: String,
-        required: true,
+      required: true,
       minlength: 6,
-        },
-    
-    
+    },
+    token: {
+      type: String,
+      default: null,
+    },
+    sessionId: {
+      type: String,
+      default: null,
+    },
     createdAt: {
       type: Date,
-        default: Date.now,
+      default: Date.now,
       required: true,
-        },
-    
-    
+    },
     updatedAt: {
       type: Date,
       default: Date.now,
@@ -42,4 +43,4 @@ const userSchema = new Schema(
   },
 );
 
-export const UserCollection = model('User', userSchema);
+export const User = model('User', userSchema);
