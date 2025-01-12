@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
 import createHttpError from 'http-errors';
 import { User } from '../db/models/user.js';
-import { getEnvVars } from '../utils/getEnvVars.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
 
-const JWT_ACCESS_SECRET = getEnvVars('JWT_ACCESS_SECRET');
+const JWT_ACCESS_SECRET = getEnvVar('JWT_ACCESS_SECRET');
 
 const authenticate = async (req, res, next) => {
   try {

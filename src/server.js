@@ -6,9 +6,9 @@ import contactsRouter from './routers/contacts.js';
 import authRouter from './routers/auth.js';
 import errorHandler from './middlewares/errorHandler.js';
 import notFoundHandler from './middlewares/notFoundHandler.js';
-import { getEnvVars } from './utils/getEnvVars.js';
+import { getEnvVar } from './utils/getEnvVar.js';
 
-const PORT = Number(getEnvVars('PORT', '3000'));
+const PORT = Number(getEnvVar('PORT', '3000'));
 
 export const setupServer = () => {
   const app = express();

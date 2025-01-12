@@ -20,3 +20,22 @@
 }
 
 
+{
+    "name": "John Deer",
+    "email": "JohnDoe@gmail.com",
+    "password": "123456A" // минимум 6 символов
+}
+
+{
+    "name": "Kronos",
+    "email": "kronosthesavannah@gmail.com",
+    "password": "123456A" // минимум 6 символов
+    pas123456789A
+}
+
+
+{
+    "name": "Andrii",
+    "email": "sotasill@gmail.com",
+    "password": "pas123456"
+}

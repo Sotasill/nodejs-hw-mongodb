@@ -1,6 +1,10 @@
 import { registerUser } from '../services/auth.js';
 import { loginUser, refreshSession, logoutUser } from '../services/auth.js';
 import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
+import { User } from '../db/models/user.js';
+import { sendResetPasswordEmail } from '../utils/sendMail.js';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 
 const register = async (req, res, next) => {
   try {
@@ -109,4 +113,73 @@ const logout = async (req, res, next) => {
   }
 };
 
-export { register, login, refresh, logout };
+const sendResetEmail = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw createHttpError(404, 'User not found!');
+  }
+
+  const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
+    expiresIn: '5m',
+  });
+
+  try {
+    await sendResetPasswordEmail(email, resetToken);
+    res.json({
+      status: 200,
+      message: 'Reset password email has been successfully sent.',
+      data: {},
+    });
+  } catch {
+    throw createHttpError(
+      500,
+      'Failed to send the email, please try again later.',
+    );
+  }
+};
+
+const wrappedSendResetEmail = ctrlWrapper(sendResetEmail);
+
+const resetPassword = async (req, res) => {
+  const { token, password } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { email } = decoded;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw createHttpError(404, 'User not found!');
+    }
+
+    user.password = password;
+    await user.save();
+
+    // Удаляем текущую сессию пользователя
+    await user.updateOne({ $set: { session: null } });
+
+    res.json({
+      status: 200,
+      message: 'Password has been successfully reset.',
+      data: {},
+    });
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw createHttpError(401, 'Token is expired or invalid.');
+    }
+    throw error;
+  }
+};
+
+const wrappedResetPassword = ctrlWrapper(resetPassword);
+
+export {
+  register,
+  login,
+  refresh,
+  logout,
+  wrappedSendResetEmail as sendResetEmail,
+  wrappedResetPassword as resetPassword,
+};

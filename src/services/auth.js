@@ -2,10 +2,10 @@ import createHttpError from 'http-errors';
 import bcrypt from 'bcrypt';
 import { User } from '../db/models/user.js';
 import jwt from 'jsonwebtoken';
-import { getEnvVars } from '../utils/getEnvVars.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
 
-const JWT_ACCESS_SECRET = getEnvVars('JWT_ACCESS_SECRET');
-const JWT_REFRESH_SECRET = getEnvVars('JWT_REFRESH_SECRET');
+const JWT_ACCESS_SECRET = getEnvVar('JWT_ACCESS_SECRET');
+const JWT_REFRESH_SECRET = getEnvVar('JWT_REFRESH_SECRET');
 
 const registerUser = async ({ name, email, password }) => {
   const existingUser = await User.findOne({ email });
