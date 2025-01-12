@@ -1,41 +1,40 @@
 {
   "info": {
-    "name": "Create Contact - Validation Test",
+    "name": "Create Contact with Photo",
     "method": "POST",
-    "url": "{{baseUrl}}/api/contacts",
-    "headers": {
-      "Content-Type": "application/json"
-    }
+    "url": "http://localhost:3000/contacts",
+    "description": "Создание нового контакта с фотографией"
   },
-  "body": {
-    "mode": "raw",
-    "raw": {
-      "name": "a",
-      "phoneNumber": "1",
-      "email": "invalid-email",
-      "isFavourite": "not-boolean",
-      "contactType": "invalid-type"
+  "header": [
+    {
+      "key": "Authorization",
+      "value": "Bearer ваш_токен_доступа",
+      "type": "text"
     }
+  ],
+  "body": {
+    "mode": "formdata",
+    "formdata": [
+      {
+        "key": "photo",
+        "type": "file",
+        "src": "выберите_файл"
+      },
+      {
+        "key": "name",
+        "value": "Иван Петров",
+        "type": "text"
+      },
+      {
+        "key": "phoneNumber",
+        "value": "+380991234567",
+        "type": "text"
+      },
+      {
+        "key": "email",
+        "value": "ivan@example.com",
+        "type": "text"
+      }
+    ]
   }
-}
-
-
-{
-    "name": "John Deer",
-    "email": "JohnDoe@gmail.com",
-    "password": "123456A" // минимум 6 символов
-}
-
-{
-    "name": "Kronos",
-    "email": "kronosthesavannah@gmail.com",
-    "password": "123456A" // минимум 6 символов
-    pas123456789A
-}
-
-
-{
-    "name": "Andrii",
-    "email": "sotasill@gmail.com",
-    "password": "pas123456"
 }
