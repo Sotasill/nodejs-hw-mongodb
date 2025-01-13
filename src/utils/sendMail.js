@@ -11,8 +11,8 @@ const __dirname = path.dirname(__filename);
 const handlebars = create();
 
 const transporter = nodemailer.createTransport({
-  host: getEnvVar('SMTP_HOST'),
-  port: getEnvVar('SMTP_PORT'),
+  host: 'smtp-relay.brevo.com',
+  port: 587,
   secure: false,
   auth: {
     user: getEnvVar('SMTP_USER'),
@@ -37,31 +37,26 @@ async function compileTemplate(templateName, data) {
 }
 
 export const sendResetPasswordEmail = async (email, token) => {
-  try {
-    const resetLink = `${getEnvVar(
-      'FRONTEND_URL',
-    )}/reset-password?token=${token}`;
+  const resetLink = `${getEnvVar(
+    'FRONTEND_URL',
+  )}/reset-password?token=${token}`;
+  const html = await compileTemplate('reset-password', { resetLink });
 
-    const html = await compileTemplate('reset-password', { resetLink });
+  const mailOptions = {
+    from: {
+      name: 'Password Reset Service',
+      address: getEnvVar('SMTP_FROM'),
+    },
+    to: email,
+    subject: 'Reset Your Password',
+    html,
+    headers: {
+      'X-Priority': '1',
+      'X-MSMail-Priority': 'High',
+      Importance: 'high',
+    },
+  };
 
-    const mailOptions = {
-      from: getEnvVar('SMTP_FROM'),
-      to: email,
-      subject: 'Сброс пароля',
-      html,
-    };
-
-    console.log('Trying to send email with options:', {
-      ...mailOptions,
-      html: 'HTML content hidden',
-    });
-
-    const result = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', result);
-
-    return result;
-  } catch (error) {
-    console.error('Error sending email:', error);
-    throw error;
-  }
+  const result = await transporter.sendMail(mailOptions);
+  return result;
 };

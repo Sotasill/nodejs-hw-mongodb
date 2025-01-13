@@ -7,23 +7,31 @@ import { getEnvVar } from '../utils/getEnvVar.js';
 const JWT_ACCESS_SECRET = getEnvVar('JWT_ACCESS_SECRET');
 const JWT_REFRESH_SECRET = getEnvVar('JWT_REFRESH_SECRET');
 
-const registerUser = async ({ name, email, password }) => {
+const registerUser = async (userData) => {
+  const { name, email, password } = userData;
+
+  if (!name || !email || !password) {
+    throw createHttpError(400, 'All fields are required');
+  }
+
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw createHttpError(409, 'Email in use');
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
   const newUser = await User.create({
     name,
     email,
     password: hashedPassword,
   });
 
-  const userData = newUser.toObject();
-  delete userData.password;
+  const userDataToReturn = newUser.toObject();
+  delete userDataToReturn.password;
 
-  return userData;
+  return userDataToReturn;
 };
 
 const loginUser = async ({ email, password }) => {

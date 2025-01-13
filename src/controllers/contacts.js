@@ -44,7 +44,7 @@ const getAllContacts = async (req, res, next) => {
       status: 200,
       message: 'Successfully found contacts!',
       data: {
-        data: contacts,
+        contacts,
         ...pagination,
       },
     });
@@ -61,7 +61,7 @@ const getContactById = async (req, res, next) => {
     res.json({
       status: 'success',
       code: 200,
-      data: { result },
+      data: result,
     });
   } catch (error) {
     next(error);
@@ -127,7 +127,7 @@ const deleteContact = async (req, res, next) => {
     const result = await removeContact(id, userId);
     res.json({
       status: 'success',
-      data: { result },
+      data: result,
     });
   } catch (error) {
     next(error);
@@ -135,51 +135,26 @@ const deleteContact = async (req, res, next) => {
 };
 
 const updateContact = async (req, res, next) => {
-  console.log('🔄 Update Contact - Start');
-  console.log('Request body:', req.body);
-  console.log('Request file:', req.file);
-
   try {
     const userId = req.user._id;
     const { id } = req.params;
-
-    // Очищаем поля от двоеточий
-    const cleanBody = {};
-    Object.keys(req.body).forEach((key) => {
-      const cleanKey = key.replace(':', '');
-      cleanBody[cleanKey] = req.body[key];
-    });
-
-    let updateData = { ...cleanBody };
+    let updateData = { ...req.body };
 
     if (req.file) {
-      console.log('📸 Processing file upload');
       try {
-        console.log('Uploading to Cloudinary:', req.file.path);
         const photoUrl = await uploadImage(req.file.path);
-        console.log('Cloudinary URL:', photoUrl);
         updateData.photo = photoUrl;
-      } catch (uploadError) {
-        console.error('❌ Cloudinary upload error:', uploadError);
-        throw uploadError;
       } finally {
-        console.log('🗑️ Cleaning up temp file:', req.file.path);
-        await fs.unlink(req.file.path).catch((error) => {
-          console.error('❌ Error deleting temp file:', error);
-        });
+        await fs.unlink(req.file.path).catch(console.error);
       }
     }
 
-    console.log('📝 Updating contact with data:', updateData);
     const result = await updateContactById(id, updateData, userId);
-    console.log('✅ Contact updated:', result);
-
     res.json({
       status: 'success',
-      data: { result },
+      data: result,
     });
   } catch (error) {
-    console.error('❌ Update Contact Error:', error);
     next(error);
   }
 };
@@ -191,7 +166,7 @@ const updateStatusContact = async (req, res, next) => {
     const result = await updateStatusContactById(id, req.body, userId);
     res.json({
       status: 'success',
-      data: { result },
+      data: result,
     });
   } catch (error) {
     next(error);

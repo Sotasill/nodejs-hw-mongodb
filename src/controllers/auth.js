@@ -5,9 +5,16 @@ import jwt from 'jsonwebtoken';
 import { User } from '../db/models/user.js';
 import { sendResetPasswordEmail } from '../utils/sendMail.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import bcrypt from 'bcrypt';
+import { registerSchema } from '../validation/auth.js';
 
 const register = async (req, res, next) => {
   try {
+    const { error } = registerSchema.validate(req.body);
+    if (error) {
+      throw createHttpError(400, error.message);
+    }
+
     const userData = await registerUser(req.body);
 
     res.status(201).json({
@@ -113,63 +120,90 @@ const logout = async (req, res, next) => {
   }
 };
 
-const sendResetEmail = async (req, res) => {
-  const { email } = req.body;
-
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw createHttpError(404, 'User not found!');
-  }
-
-  const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
-    expiresIn: '5m',
-  });
-
+const sendResetEmail = async (req, res, next) => {
   try {
-    await sendResetPasswordEmail(email, resetToken);
-    res.json({
-      status: 200,
-      message: 'Reset password email has been successfully sent.',
-      data: {},
-    });
-  } catch {
-    throw createHttpError(
-      500,
-      'Failed to send the email, please try again later.',
-    );
-  }
-};
+    const { email } = req.body;
 
-const wrappedSendResetEmail = ctrlWrapper(sendResetEmail);
-
-const resetPassword = async (req, res) => {
-  const { token, password } = req.body;
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const { email } = decoded;
+    if (!email) {
+      throw createHttpError(400, 'Email is required');
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
       throw createHttpError(404, 'User not found!');
     }
 
-    user.password = password;
-    await user.save();
-
-    // Удаляем текущую сессию пользователя
-    await user.updateOne({ $set: { session: null } });
-
-    res.json({
-      status: 200,
-      message: 'Password has been successfully reset.',
-      data: {},
+    const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
+      expiresIn: '5m',
     });
-  } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      throw createHttpError(401, 'Token is expired or invalid.');
+
+    try {
+      const emailResult = await sendResetPasswordEmail(email, resetToken);
+      res.json({
+        status: 200,
+        message: 'Reset password email has been successfully sent.',
+        data: {
+          messageId: emailResult.messageId,
+        },
+      });
+    } catch (emailError) {
+      throw createHttpError(
+        500,
+        emailError.message ||
+          'Failed to send the email, please try again later.',
+      );
     }
-    throw error;
+  } catch (error) {
+    next(error);
+  }
+};
+
+const wrappedSendResetEmail = ctrlWrapper(sendResetEmail);
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      throw createHttpError(400, 'Token and password are required');
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const { email } = decoded;
+
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw createHttpError(404, 'User not found!');
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      await User.findOneAndUpdate(
+        { email },
+        {
+          $set: {
+            password: hashedPassword,
+            token: null,
+            sessionId: null,
+          },
+        },
+      );
+
+      res.json({
+        status: 200,
+        message: 'Password has been successfully reset.',
+        data: null,
+      });
+    } catch (error) {
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw createHttpError(401, 'Token is expired or invalid.');
+      }
+      throw error;
+    }
+  } catch (error) {
+    next(error);
   }
 };
 
