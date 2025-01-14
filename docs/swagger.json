@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Contacts API",
-    "description": "API для управления контактами",
+    "description": "API for managing contacts",
     "version": "1.0.0",
     "license": {
       "name": "ISC"
@@ -21,11 +21,11 @@
   "tags": [
     {
       "name": "Auth",
-      "description": "Операции аутентификации"
+      "description": "Authentication operations"
     },
     {
       "name": "Contacts",
-      "description": "Операции с контактами"
+      "description": "Operations with contacts"
     }
   ],
   "paths": {
