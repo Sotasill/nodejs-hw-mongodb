@@ -1,0 +1,84 @@
+openapi: 3.0.3
+info:
+  title: Contacts API
+  description: API для управления контактами
+  version: 1.0.0
+  license:
+    name: ISC
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://your-production-url.com
+    description: Production server
+
+tags:
+  - name: Auth
+    description: Операции аутентификации
+  - name: Contacts
+    description: Операции с контактами
+
+paths:
+  /api/auth/register:
+    post:
+      $ref: '../swagger/paths/auth/register.yaml'
+
+  /api/auth/login:
+    post:
+      $ref: '../swagger/paths/auth/login.yaml'
+
+  /api/auth/logout:
+    post:
+      $ref: '../swagger/paths/auth/logout.yaml'
+
+  /api/auth/refresh:
+    post:
+      $ref: '../swagger/paths/auth/refresh.yaml'
+
+  /api/auth/reset-pwd:
+    post:
+      $ref: '../swagger/paths/auth/reset-password.yaml'
+
+  /api/auth/send-reset-email:
+    post:
+      $ref: '../swagger/paths/auth/send-reset-email.yaml'
+
+  /api/contacts:
+    get:
+      $ref: '../swagger/paths/contacts/get.yaml'
+    post:
+      $ref: '../swagger/paths/contacts/post.yaml'
+
+  /api/contacts/{id}:
+    get:
+      $ref: '../swagger/paths/id/get.yaml'
+    patch:
+      $ref: '../swagger/paths/id/patch.yaml'
+    delete:
+      $ref: '../swagger/paths/id/delate.yaml'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Contact:
+      $ref: '../swagger/components/schemas/contact.yaml'
+    User:
+      $ref: '../swagger/components/schemas/user.yaml'
+    Auth:
+      $ref: '../swagger/components/schemas/auth.yaml'
+    Error:
+      $ref: '../swagger/components/schemas/error.yaml'
+
+  responses:
+    400:
+      $ref: '../swagger/components/responses/400.yaml'
+    401:
+      $ref: '../swagger/components/responses/401.yaml'
+    404:
+      $ref: '../swagger/components/responses/404.yaml'
+    500:
+      $ref: '../swagger/components/responses/500.yaml'

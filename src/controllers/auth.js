@@ -138,13 +138,11 @@ const sendResetEmail = async (req, res, next) => {
     });
 
     try {
-      const emailResult = await sendResetPasswordEmail(email, resetToken);
+      await sendResetPasswordEmail(email, resetToken);
       res.json({
         status: 200,
         message: 'Reset password email has been successfully sent.',
-        data: {
-          messageId: emailResult.messageId,
-        },
+        data: {},
       });
     } catch (emailError) {
       throw createHttpError(
