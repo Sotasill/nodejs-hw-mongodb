@@ -21,9 +21,19 @@ router.use(authenticate);
 
 router.get('/', getAllContacts);
 router.get('/:id', getContactById);
-router.post('/', uploadMiddleware, createContact);
+router.post(
+  '/',
+  uploadMiddleware,
+  validateBody(createContactSchema),
+  createContact,
+);
 router.delete('/:id', deleteContact);
-router.patch('/:id', uploadMiddleware, updateContact);
+router.patch(
+  '/:id',
+  uploadMiddleware,
+  validateBody(updateContactSchema),
+  updateContact,
+);
 router.patch('/:id/favorite', updateStatusContact);
 
 export default router;
